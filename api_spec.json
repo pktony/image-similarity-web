@@ -1,0 +1,297 @@
+{
+    "components": {
+        "schemas": {
+            "Body_find_similar_by_upload_api_v1_similarity_find_by_upload_post": {
+                "properties": {
+                    "file": {
+                        "description": "Image file to analyze",
+                        "format": "binary",
+                        "title": "File",
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "file"
+                ],
+                "title": "Body_find_similar_by_upload_api_v1_similarity_find_by_upload_post",
+                "type": "object"
+            },
+            "HTTPValidationError": {
+                "properties": {
+                    "detail": {
+                        "items": {
+                            "$ref": "#/components/schemas/ValidationError"
+                        },
+                        "title": "Detail",
+                        "type": "array"
+                    }
+                },
+                "title": "HTTPValidationError",
+                "type": "object"
+            },
+            "ImageUrlRequest": {
+                "description": "Request schema for image URL",
+                "properties": {
+                    "url": {
+                        "description": "Image URL to analyze",
+                        "format": "uri",
+                        "maxLength": 2083,
+                        "minLength": 1,
+                        "title": "Url",
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "url"
+                ],
+                "title": "ImageUrlRequest",
+                "type": "object"
+            },
+            "SimilarityResponse": {
+                "description": "Response schema for similarity results",
+                "example": {
+                    "is_unknown": false,
+                    "margin": 0.13,
+                    "s1": 0.85,
+                    "top_k": [
+                        [
+                            "피카츄",
+                            0.85
+                        ],
+                        [
+                            "라이츄",
+                            0.72
+                        ],
+                        [
+                            "파이리",
+                            0.65
+                        ]
+                    ],
+                    "verdict": "피카츄"
+                },
+                "properties": {
+                    "is_unknown": {
+                        "description": "Whether the query should be classified as unknown",
+                        "title": "Is Unknown",
+                        "type": "boolean"
+                    },
+                    "margin": {
+                        "description": "Difference between top two scores (s1 - s2)",
+                        "title": "Margin",
+                        "type": "number"
+                    },
+                    "s1": {
+                        "description": "Top similarity score",
+                        "title": "S1",
+                        "type": "number"
+                    },
+                    "top_k": {
+                        "description": "List of (class_name, similarity_score) tuples sorted by score descending",
+                        "items": {
+                            "maxItems": 2,
+                            "minItems": 2,
+                            "prefixItems": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "number"
+                                }
+                            ],
+                            "type": "array"
+                        },
+                        "title": "Top K",
+                        "type": "array"
+                    },
+                    "verdict": {
+                        "description": "Final verdict: class name or 'unknown'",
+                        "title": "Verdict",
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "top_k",
+                    "verdict",
+                    "s1",
+                    "margin",
+                    "is_unknown"
+                ],
+                "title": "SimilarityResponse",
+                "type": "object"
+            },
+            "ValidationError": {
+                "properties": {
+                    "loc": {
+                        "items": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "integer"
+                                }
+                            ]
+                        },
+                        "title": "Location",
+                        "type": "array"
+                    },
+                    "msg": {
+                        "title": "Message",
+                        "type": "string"
+                    },
+                    "type": {
+                        "title": "Error Type",
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "loc",
+                    "msg",
+                    "type"
+                ],
+                "title": "ValidationError",
+                "type": "object"
+            }
+        }
+    },
+    "info": {
+        "title": "Image Similarity API",
+        "version": "1.0.0"
+    },
+    "openapi": "3.1.0",
+    "paths": {
+        "/": {
+            "get": {
+                "description": "Root endpoint",
+                "operationId": "root__get",
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        },
+                        "description": "Successful Response"
+                    }
+                },
+                "summary": "Root"
+            }
+        },
+        "/api/v1/similarity/find-by-upload": {
+            "post": {
+                "description": "Find similar Pokémon from uploaded image file\n\n- **file**: Image file (multipart/form-data)\n- **top_k**: Number of top results (default: 3, range: 1-10)",
+                "operationId": "find_similar_by_upload_api_v1_similarity_find_by_upload_post",
+                "parameters": [
+                    {
+                        "description": "Number of top similar results to return",
+                        "in": "query",
+                        "name": "top_k",
+                        "required": false,
+                        "schema": {
+                            "default": 3,
+                            "description": "Number of top similar results to return",
+                            "maximum": 10,
+                            "minimum": 1,
+                            "title": "Top K",
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Body_find_similar_by_upload_api_v1_similarity_find_by_upload_post"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SimilarityResponse"
+                                }
+                            }
+                        },
+                        "description": "Successful Response"
+                    },
+                    "422": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        },
+                        "description": "Validation Error"
+                    }
+                },
+                "summary": "Find Similar By Upload",
+                "tags": [
+                    "similarity"
+                ]
+            }
+        },
+        "/api/v1/similarity/find-by-url": {
+            "post": {
+                "description": "Find similar Pokémon from image URL\n\n- **url**: Image URL (HTTP/HTTPS)\n- **top_k**: Number of top results (default: 3, range: 1-10)",
+                "operationId": "find_similar_by_url_api_v1_similarity_find_by_url_post",
+                "parameters": [
+                    {
+                        "description": "Number of top similar results to return",
+                        "in": "query",
+                        "name": "top_k",
+                        "required": false,
+                        "schema": {
+                            "default": 3,
+                            "description": "Number of top similar results to return",
+                            "maximum": 10,
+                            "minimum": 1,
+                            "title": "Top K",
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ImageUrlRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SimilarityResponse"
+                                }
+                            }
+                        },
+                        "description": "Successful Response"
+                    },
+                    "422": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        },
+                        "description": "Validation Error"
+                    }
+                },
+                "summary": "Find Similar By Url",
+                "tags": [
+                    "similarity"
+                ]
+            }
+        }
+    }
+}

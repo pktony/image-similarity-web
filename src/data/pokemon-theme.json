@@ -1,0 +1,36 @@
+{
+  "colors": {
+    "pokemon": {
+      "red": "#EE1515",
+      "darkRed": "#CC0000",
+      "white": "#FFFFFF",
+      "black": "#2B2B2B",
+      "yellow": "#FFDE00",
+      "blue": "#3B4CCA"
+    },
+    "ranks": {
+      "gold": "#FFD700",
+      "silver": "#C0C0C0",
+      "bronze": "#CD7F32"
+    },
+    "ui": {
+      "background": "#F5F5F5",
+      "cardBg": "#FFFFFF",
+      "border": "#E0E0E0",
+      "text": "#2B2B2B",
+      "textMuted": "#6B7280"
+    }
+  },
+  "gradients": {
+    "pokeball": "linear-gradient(180deg, #EE1515 50%, #FFFFFF 50%)",
+    "result": "linear-gradient(135deg, #EE1515 0%, #CC0000 100%)"
+  },
+  "icons": {
+    "medals": {
+      "1": "🥇",
+      "2": "🥈",
+      "3": "🥉"
+    },
+    "pokemon": "⚡"
+  }
+}
