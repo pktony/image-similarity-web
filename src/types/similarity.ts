@@ -12,6 +12,7 @@ export type SimilarityResult = [string, number]; // [포켓몬명, 유사도 점
 
 export interface SimilarityResponse {
   top_k: SimilarityResult[]; // Top K 유사도 결과
+  top_k_english: SimilarityResult[]; // Top K 유사도 영어 결과
   verdict: string; // 최종 판정 (포켓몬명 또는 "unknown")
   s1: number; // 최고 유사도 점수
   margin: number; // 1위와 2위 점수 차이 (s1 - s2)
