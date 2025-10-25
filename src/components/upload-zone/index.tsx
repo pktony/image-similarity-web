@@ -1,9 +1,10 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import { Upload, Image as ImageIcon } from 'lucide-react';
+import { Upload, Image as ImageIcon, FileCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { validateImageFile } from '@/api/similarity';
+import { compressImage, formatFileSize } from '@/lib/image-compression';
 
 interface UploadZoneProps {
   onFileSelect: (file: File) => void;
@@ -13,6 +14,7 @@ interface UploadZoneProps {
 export default function UploadZone({ onFileSelect, disabled }: UploadZoneProps) {
   const [isDragOver, setIsDragOver] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isCompressing, setIsCompressing] = useState(false);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -28,13 +30,30 @@ export default function UploadZone({ onFileSelect, disabled }: UploadZoneProps) 
     setIsDragOver(false);
   }, []);
 
+  const processFile = useCallback(async (file: File) => {
+    setIsCompressing(true);
+    try {
+      const originalSize = formatFileSize(file.size);
+      const compressedFile = await compressImage(file);
+      const compressedSize = formatFileSize(compressedFile.size);
+
+      console.log(`압축 완료: ${originalSize} → ${compressedSize}`);
+      onFileSelect(compressedFile);
+    } catch (err) {
+      console.error('압축 중 오류:', err);
+      onFileSelect(file);
+    } finally {
+      setIsCompressing(false);
+    }
+  }, [onFileSelect]);
+
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragOver(false);
     setError(null);
 
-    if (disabled) return;
+    if (disabled || isCompressing) return;
 
     const files = Array.from(e.dataTransfer.files);
     const imageFile = files.find(file => file.type.startsWith('image/'));
@@ -50,8 +69,8 @@ export default function UploadZone({ onFileSelect, disabled }: UploadZoneProps) 
       return;
     }
 
-    onFileSelect(imageFile);
-  }, [disabled, onFileSelect]);
+    processFile(imageFile);
+  }, [disabled, isCompressing, processFile]);
 
   const handleFileInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setError(null);
@@ -65,8 +84,8 @@ export default function UploadZone({ onFileSelect, disabled }: UploadZoneProps) 
       return;
     }
 
-    onFileSelect(file);
-  }, [onFileSelect]);
+    processFile(file);
+  }, [processFile]);
 
   return (
     <div className="w-full">
@@ -76,22 +95,27 @@ export default function UploadZone({ onFileSelect, disabled }: UploadZoneProps) 
         onDrop={handleDrop}
         className={cn(
           'relative border-2 border-dashed rounded-xl p-12 sm:p-16 text-center transition-all cursor-pointer',
-          isDragOver && !disabled && 'border-red-500 bg-red-50 scale-[1.01]',
-          !isDragOver && 'border-gray-300 hover:border-red-400 hover:bg-gray-50',
-          disabled && 'opacity-50 cursor-not-allowed',
-          error && 'border-red-400 bg-red-50'
+          isDragOver && !disabled && !isCompressing && 'border-red-500 bg-red-50 scale-[1.01]',
+          !isDragOver && !isCompressing && 'border-gray-300 hover:border-red-400 hover:bg-gray-50',
+          (disabled || isCompressing) && 'opacity-50 cursor-not-allowed',
+          error && 'border-red-400 bg-red-50',
+          isCompressing && 'border-blue-400 bg-blue-50'
         )}
       >
         <input
           type="file"
           accept="image/*"
           onChange={handleFileInput}
-          disabled={disabled}
+          disabled={disabled || isCompressing}
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
         />
 
         <div className="flex flex-col items-center gap-4">
-          {isDragOver ? (
+          {isCompressing ? (
+            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center animate-pulse">
+              <FileCheck className="w-8 h-8 text-blue-600" />
+            </div>
+          ) : isDragOver ? (
             <Upload className="w-12 h-12 text-red-600" />
           ) : (
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
@@ -101,10 +125,16 @@ export default function UploadZone({ onFileSelect, disabled }: UploadZoneProps) 
 
           <div className="space-y-2">
             <p className="text-base font-semibold text-gray-900">
-              {isDragOver ? '이미지를 여기에 놓으세요' : '이미지를 드래그하거나 클릭하세요'}
+              {isCompressing
+                ? '이미지 압축 중...'
+                : isDragOver
+                ? '이미지를 여기에 놓으세요'
+                : '이미지를 드래그하거나 클릭하세요'}
             </p>
             <p className="text-sm text-gray-500">
-              JPG, PNG, WebP, GIF (최대 10MB)
+              {isCompressing
+                ? '잠시만 기다려주세요'
+                : 'JPG, PNG, WebP, GIF (최대 10MB)'}
             </p>
           </div>
         </div>
