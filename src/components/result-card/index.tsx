@@ -11,11 +11,26 @@ interface ResultCardProps {
   result: SimilarityResponse;
 }
 
+const RANK_LABELS = {
+  1: '🥇 최고의 닮은꼴!',
+  2: '🥈 숨겨진 닮은꼴',
+  3: '🥉 의외의 닮은꼴',
+} as const;
+
 export default function ResultCard({ result }: ResultCardProps) {
   const { top_k, top_k_english } = result;
   const medals = pokemonTheme.icons.medals;
   const [pokemonImages, setPokemonImages] = useState<(string | null)[]>([]);
   const [isLoadingImages, setIsLoadingImages] = useState(true);
+  const [revealPhase, setRevealPhase] = useState<'drumroll' | 'reveal'>('drumroll');
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setRevealPhase('reveal');
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     const loadPokemonImages = async () => {
@@ -35,13 +50,33 @@ export default function ResultCard({ result }: ResultCardProps) {
     loadPokemonImages();
   }, [top_k_english]);
 
-  return (
-    <Card className="w-full bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-lg">
-      <CardContent className="p-6 sm:p-8 space-y-5">
+  if (revealPhase === 'drumroll') {
+    return (
+      <Card className="w-full bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-lg">
+        <CardContent className="p-8 sm:p-12 flex flex-col items-center justify-center min-h-[300px] space-y-6">
+          <div className="text-6xl animate-bounce">🎉</div>
+          <div className="text-center space-y-2">
+            <h3 className="text-2xl font-bold text-gray-900 animate-pulse">
+              두구두구두구...
+            </h3>
+            <p className="text-gray-600">당신의 포켓몬을 찾고 있어요!</p>
+          </div>
+          <div className="flex gap-2">
+            <div className="w-3 h-3 bg-red-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+            <div className="w-3 h-3 bg-red-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+            <div className="w-3 h-3 bg-red-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
+  return (
+    <Card className="w-full bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-lg animate-in fade-in zoom-in-95 duration-500">
+      <CardContent className="p-6 sm:p-8 space-y-5">
         <div className="space-y-4">
           <h3 className="font-bold text-xl text-gray-900 flex items-center gap-2">
-            🏆 매칭 결과
+            ✨ 당신의 포켓몬 발견!
           </h3>
 
           {top_k.slice(0, 3).map((item, index) => {
@@ -50,16 +85,18 @@ export default function ResultCard({ result }: ResultCardProps) {
             const rankNumber = (index + 1) as 1 | 2 | 3;
             const medal = medals[rankNumber.toString() as '1' | '2' | '3'];
             const pokemonImageUrl = pokemonImages[index];
+            const rankLabel = RANK_LABELS[rankNumber];
 
             return (
               <div
                 key={index}
                 className={`
-                  space-y-3 p-4 rounded-xl border transition-all duration-200
+                  space-y-3 p-4 rounded-xl border transition-all duration-200 animate-fade-in-up
                   ${index === 0 ? 'bg-amber-50 border-amber-200' : ''}
                   ${index === 1 ? 'bg-gray-50 border-gray-200' : ''}
                   ${index === 2 ? 'bg-orange-50 border-orange-200' : ''}
                 `}
+                style={{ animationDelay: `${index * 150}ms` }}
               >
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
@@ -70,7 +107,6 @@ export default function ResultCard({ result }: ResultCardProps) {
                       {medal}
                     </div>
 
-                    {/* Pokemon Image */}
                     <div className="w-16 h-16 flex items-center justify-center bg-white rounded-lg border border-gray-200 shrink-0">
                       {isLoadingImages ? (
                         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-400"></div>
@@ -88,7 +124,7 @@ export default function ResultCard({ result }: ResultCardProps) {
                     <div>
                       <p className="font-bold text-lg text-gray-900">{name}</p>
                       <p className="text-xs font-medium text-gray-500">
-                        {rankNumber}위
+                        {rankLabel}
                       </p>
                     </div>
                   </div>
@@ -111,7 +147,11 @@ export default function ResultCard({ result }: ResultCardProps) {
           })}
         </div>
 
-        
+        <div className="pt-4 border-t border-gray-100 text-center">
+          <p className="text-sm text-gray-600">
+            친구들한테 자랑해보세요! 🎉
+          </p>
+        </div>
       </CardContent>
     </Card>
   );

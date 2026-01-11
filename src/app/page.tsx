@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -22,6 +22,13 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<SimilarityResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const resultRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (result && resultRef.current) {
+      resultRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [result]);
 
   // 파일 선택 핸들러
   const handleFileSelect = (file: File) => {
@@ -174,7 +181,7 @@ export default function Home() {
 
         {/* 결과 섹션 */}
         {result && (
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-5">
+          <div ref={resultRef} className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-5">
             <ResultCard result={result} />
 
             {/* 다시 시도 버튼 */}
@@ -184,8 +191,8 @@ export default function Home() {
                 variant="outline"
                 className="px-6 py-5 text-sm font-semibold h-auto rounded-xl border-2 hover:bg-gray-50"
               >
-                <span className="mr-2">🔄</span>
-                다른 이미지로 시도하기
+                <span className="mr-2">📸</span>
+                새로운 사진으로 도전!
               </Button>
             </div>
           </div>
