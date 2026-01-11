@@ -111,17 +111,7 @@ export default function ResultCard({ result }: ResultCardProps) {
           })}
         </div>
 
-        {result.margin > 0 && (
-          <div className="pt-2">
-            <div className="px-4 py-3 bg-blue-50 rounded-lg border border-blue-200">
-              <p className="text-sm font-medium text-gray-700 text-center">
-                <span className="mr-2">🎯</span>
-                신뢰도: <span className="font-bold text-blue-700">{Math.round(result.margin * 100)}%</span>
-                <span className="text-gray-500 ml-1">(1위-2위 차이)</span>
-              </p>
-            </div>
-          </div>
-        )}
+        
       </CardContent>
     </Card>
   );
