@@ -2,10 +2,11 @@
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { SimilarityResponse } from '@/types';
 import { getPokemonImages } from '@/api/pokemon';
 import pokemonTheme from '@/data/pokemon-theme.json';
+import ShareButton from '@/components/share-button';
 
 interface ResultCardProps {
   result: SimilarityResponse;
@@ -23,6 +24,7 @@ export default function ResultCard({ result }: ResultCardProps) {
   const [pokemonImages, setPokemonImages] = useState<(string | null)[]>([]);
   const [isLoadingImages, setIsLoadingImages] = useState(true);
   const [revealPhase, setRevealPhase] = useState<'drumroll' | 'reveal'>('drumroll');
+  const captureRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -74,7 +76,7 @@ export default function ResultCard({ result }: ResultCardProps) {
   return (
     <Card className="w-full bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-lg animate-in fade-in zoom-in-95 duration-500">
       <CardContent className="p-6 sm:p-8 space-y-5">
-        <div className="space-y-4">
+        <div ref={captureRef} className="space-y-4 bg-white p-4 -m-4 mb-0">
           <h3 className="font-bold text-xl text-gray-900 flex items-center gap-2">
             ✨ 당신의 포켓몬 발견!
           </h3>
@@ -147,10 +149,11 @@ export default function ResultCard({ result }: ResultCardProps) {
           })}
         </div>
 
-        <div className="pt-4 border-t border-gray-100 text-center">
+        <div className="pt-4 border-t border-gray-100 text-center space-y-3">
           <p className="text-sm text-gray-600">
             친구들한테 자랑해보세요! 🎉
           </p>
+          <ShareButton result={result} captureTargetRef={captureRef} />
         </div>
       </CardContent>
     </Card>
